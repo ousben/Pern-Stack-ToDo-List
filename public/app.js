@@ -11,7 +11,7 @@ class App extends Component {
         fetch('/list')
             .then(response => response.json())
             .then(data => {
-                this.setState({items: data})
+                this.setState({items: data.sort((a, b) => a.position - b.position)})
                 console.log(data)
             });
     }
@@ -39,12 +39,15 @@ class AddItemForm extends Component {
             headers:{'Content-Type': 'application/json'},
             body:JSON.stringify({'text': this.state.value})
         })
-        .then(() => this.props.getallitems())
+        .then(() => {
+            this.props.getallitems()
+            this.refs.input.value = "";
+        })
         e.preventDefault()
     }
     render () {
         return createElement('form', {onSubmit : (e) => this.addItem(e)},
-            createElement('input', {onChange: (e) => this.setState({value: e.target.value})}),
+            createElement('input',{ref: "input", onChange: (e) => this.setState({value: e.target.value})}),
             createElement('button', {}, "Add")
         )
 
@@ -53,13 +56,15 @@ class AddItemForm extends Component {
 
 class ListItem extends Component {
     editItem () {
-        let newText = prompt("Edit ToDo");
-        fetch('/list/edit', {
-            method:"post",
-            headers:{'Content-Type': 'application/json'},
-            body:JSON.stringify({'position': this.props.position,'text': newText})
-        })
-        .then(() => this.props.getallitems())
+        let newText = prompt("Edit ToDo", this.props.text);
+        if (newText) {
+            fetch('/list/edit', {
+                method:"post",
+                headers:{'Content-Type': 'application/json'},
+                body:JSON.stringify({'position': this.props.position,'text': newText})
+            })
+            .then(() => this.props.getallitems())
+        }
     }
     deleteItem () {
         fetch('/list/delete', {
@@ -82,7 +87,7 @@ class List extends Component {
     render () {
         let listItems = []
         for(let i=0; i < this.props.items.length; i++) {
-            listItems.push(createElement(ListItem, {text : this.props.items[i], position : i, getallitems : () => this.props.getallitems()}));
+            listItems.push(createElement(ListItem, {text : this.props.items[i].text, position : this.props.items[i].position, getallitems : () => this.props.getallitems()}));
         }
         return createElement('ul', {},
         ...listItems
