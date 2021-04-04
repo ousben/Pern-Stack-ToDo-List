@@ -20,11 +20,9 @@ class App extends Component {
     }
     render () {
         return createElement('div', {},
-            createElement('H1', {}, "Pern ToDo List"),
             createElement(AddItemForm, {getallitems : () => this.getallitems()}),
             createElement(List, {items : this.state.items, getallitems : () => this.getallitems()})
         )
-
     }
 }
 
@@ -41,16 +39,16 @@ class AddItemForm extends Component {
         })
         .then(() => {
             this.props.getallitems()
+            this.setState({value: ""});
             this.refs.input.value = "";
         })
         e.preventDefault()
     }
     render () {
         return createElement('form', {onSubmit : (e) => this.addItem(e)},
-            createElement('input',{ref: "input", onChange: (e) => this.setState({value: e.target.value})}),
-            createElement('button', {}, "Add")
+            createElement('input',{ref: "input", onChange: (e) => this.setState({value: e.target.value}), placeholder: "What do you want to do ?"}),
+            createElement('button', {className: "add-button", title: "Add item"})
         )
-
     }
 }
 
@@ -77,8 +75,8 @@ class ListItem extends Component {
     render () {
         return createElement('li', {},
             createElement('span', {}, this.props.text),
-            createElement('button', {onClick : () => this.editItem()}, "Edit"),
-            createElement('button', {onClick : () => this.deleteItem()}, "Delete")
+            createElement('button', {onClick : () => this.editItem(), className: "edit-button", title: "Edit item"}),
+            createElement('button', {onClick : () => this.deleteItem(), className: "delete-button", title: "Delete item"})
         )
     }
 }
@@ -89,9 +87,7 @@ class List extends Component {
         for(let i=0; i < this.props.items.length; i++) {
             listItems.push(createElement(ListItem, {text : this.props.items[i].text, position : this.props.items[i].position, getallitems : () => this.props.getallitems()}));
         }
-        return createElement('ul', {},
-        ...listItems
-        )
+        return createElement('ul', {}, ...listItems)
     }
 }
 
